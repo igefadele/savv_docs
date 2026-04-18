@@ -11,7 +11,7 @@
 <div class="topbar">
     <div class="topbar-left">
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation">☰</button>
-        <a class="topbar-logo" href="docs-home.html">
+        <a class="topbar-logo" href="/">
             <div class="logo-mark">sv</div>
             <span class="logo-name">savv<span>.web</span></span>
         </a>
@@ -91,7 +91,7 @@
         <article class="content">
 
             <div class="breadcrumb">
-                <a href="docs-home.html">savv.web</a>
+                <a href="/">savv.web</a>
                 <span>/</span>
                 <span>documentation</span>
             </div>
@@ -1117,7 +1117,7 @@ document.<span class="c-fn">addEventListener</span>(<span class="c-str">'savv:in
 
                 <div class="doc-nav">
                     <div></div>
-                    <a class="doc-nav-link" href="docs-home.html">
+                    <a class="doc-nav-link" href="/">
                         <span class="doc-nav-label">↖ Back to</span>
                         <span class="doc-nav-title">Documentation Home</span>
                     </a>

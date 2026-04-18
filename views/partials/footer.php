@@ -13,7 +13,7 @@
             <div class="footer-col">
                 <h5>Framework</h5>
                 <ul>
-                    <li><a href="docs.html">Documentation</a></li>
+                    <li><a href="/docs">Documentation</a></li>
                     <li><a href="https://github.com/igefadele/savv_framework" target="_blank">GitHub (Framework)</a>
                     </li>
                     <li><a href="https://github.com/igefadele/savv_starter" target="_blank">GitHub (Starter)</a></li>
