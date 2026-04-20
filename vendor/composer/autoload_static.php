@@ -78,7 +78,6 @@ class ComposerStaticInit57274eaa4aa087b1b60f792066c1f91a
 
     public static $classMap = array (
         'App\\Constants\\ContactConstants' => __DIR__ . '/../..' . '/app/Constants/ContactConstants.php',
-        'App\\Constants\\MiddlewareConstants' => __DIR__ . '/../..' . '/app/Constants/MiddlewareConstants.php',
         'App\\Controllers\\ContactController' => __DIR__ . '/../..' . '/app/Controllers/ContactController.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',

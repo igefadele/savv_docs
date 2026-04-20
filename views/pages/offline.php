@@ -52,5 +52,5 @@
 
 <?php 
     $content = ob_get_clean(); 
-    include __DIR__ . '/layouts/index.php'; 
+    include view_path('/layouts/index.php'); 
 ?>

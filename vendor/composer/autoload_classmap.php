@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Constants\\ContactConstants' => $baseDir . '/app/Constants/ContactConstants.php',
-    'App\\Constants\\MiddlewareConstants' => $baseDir . '/app/Constants/MiddlewareConstants.php',
     'App\\Controllers\\ContactController' => $baseDir . '/app/Controllers/ContactController.php',
     'Attribute' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',

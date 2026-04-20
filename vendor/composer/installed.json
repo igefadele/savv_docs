@@ -145,24 +145,24 @@
         },
         {
             "name": "savadub/savv",
-            "version": "v2.3.1",
-            "version_normalized": "2.3.1.0",
+            "version": "v2.4.1",
+            "version_normalized": "2.4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/igefadele/savv_framework.git",
-                "reference": "7adb3b866e1ec52b8ef7edbf8026addabd7abd28"
+                "reference": "600fd777692941c02fcce7adccc649f46211ba6e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/igefadele/savv_framework/zipball/7adb3b866e1ec52b8ef7edbf8026addabd7abd28",
-                "reference": "7adb3b866e1ec52b8ef7edbf8026addabd7abd28",
+                "url": "https://api.github.com/repos/igefadele/savv_framework/zipball/600fd777692941c02fcce7adccc649f46211ba6e",
+                "reference": "600fd777692941c02fcce7adccc649f46211ba6e",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0",
                 "vlucas/phpdotenv": "^5.5"
             },
-            "time": "2026-04-18T09:30:56+00:00",
+            "time": "2026-04-20T15:09:51+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -193,7 +193,7 @@
                 "wordpress-fallback"
             ],
             "support": {
-                "source": "https://github.com/igefadele/savv_framework/tree/v2.3.1",
+                "source": "https://github.com/igefadele/savv_framework/tree/v2.4.1",
                 "issues": "https://github.com/igefadele/savv_framework/issues"
             },
             "install-path": "../savadub/savv"

@@ -15,11 +15,16 @@
     <meta name="twitter:title" content="<?php echo $pageTitle ?? 'Savv Framework'; ?>" />
     <meta name="twitter:description" content="<?php echo $pageDescription ?? 'A lightweight PHP web framework'; ?>" />
 
-    <link rel="icon" type="image/png" href="/assets/images/icons/favicon.png">
+    <link rel="icon" type="image/png" href="<?= asset("/images/icons/favicon.png") ?>">
+
+    <!-- Preconnet the links since the google-fonts.css file use the links -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="<?= asset("/css/main.css") ?>">
 
     <?php if (isset($extraCSS)) echo $extraCSS; ?>
 </head>

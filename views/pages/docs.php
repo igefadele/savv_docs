@@ -18,7 +18,7 @@
     </div>
     <div class="topbar-right">
         <div class="topbar-search">⌕ &nbsp;Search docs…</div>
-        <span class="topbar-version">v2.1.0</span>
+        <span class="topbar-version"><?= config('app.version') ?></span>
         <a class="topbar-link" href="https://github.com/igefadele/savv_framework" target="_blank">GitHub</a>
         <a class="topbar-btn" href="https://github.com/igefadele/savv_starter" target="_blank">Get Starter Project</a>
     </div>
@@ -98,7 +98,7 @@
 
             <!-- OVERVIEW -->
             <div id="overview" class="doc-section">
-                <div class="doc-badge">v2.3.1 · ~526 KB · MIT</div>
+                <div class="doc-badge"><?= config('app.version') ?> · ~<?= config('app.size') ?> · MIT</div>
                 <h1 class="page-title">Savv Web Framework</h1>
                 <p class="page-lead">A zero-config, zero-build PHP engine for high-performance brand websites,
                     portfolios, and public-facing web experiences. The speed of a static site, the power of a lean PHP
@@ -106,7 +106,7 @@
 
                 <div class="callout info">
                     <span class="callout-icon">ℹ</span>
-                    <p>The entire framework package is <strong>~526 KB</strong> as of v2.1.0. Less than 1 MB total. You
+                    <p>The entire framework package is <strong>~<?= config('app.size') ?></strong> as of v2.1.0. Less than 1 MB total. You
                         can trace the entire codebase in an afternoon.</p>
                 </div>
             </div>

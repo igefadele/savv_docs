@@ -36,7 +36,7 @@
                 <span class="copy-icon">⎘</span>
             </div>
             <div class="badges-row">
-                <span class="badge">📦 <span>~526 KB</span> total</span>
+                <span class="badge">📦 <span>~<?= config('app.size') ?></span> total</span>
                 <span class="badge">⚡ <span>PHP 8+</span></span>
                 <span class="badge">🔒 <span>MIT</span> license</span>
                 <span class="badge">🌐 <span>PWA</span> out of the box</span>
@@ -115,8 +115,8 @@
             </div>
             <div class="size-callout">
                 <div class="size-card">
-                    <span class="size-num">~526 KB</span>
-                    <div class="size-label">Total framework package size as of v2.1.0</div>
+                    <span class="size-num">~<?= config('app.size') ?></span>
+                    <div class="size-label">Total framework package size as of <?= config('app.version') ?></div>
                     <div class="size-sub">// less than 1 MB. the entire engine.</div>
                 </div>
             </div>
