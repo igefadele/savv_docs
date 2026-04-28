@@ -5,6 +5,36 @@ All notable changes to the Savv Web Framework are documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+
+## [2.5.3] - 2026-04-24
+
+### Updated
+
+- **Application - PUBLIC_PATH defined also in bootstrap. It's now accepted as a parameter in public/index.php
+- Use like: Application::bootstrap(ROOT_PATH, PUBLIC_PATH);
+
+
+## [2.5.2] - 2026-04-24
+
+### Update
+
+- ** serveAsset fallback failure | SystemController@serveAsset(), Router@dispatch(), Helpers/routers.php.
+
+
+## [2.5.1] - 2026-04-23
+
+### Fixed
+
+- **Utils/Router - dispatch() | safer $path slashing for failsave route comparision espesially for nested routes not using dynamicDiscovery.
+
+
+## [2.5.0] - 2026-04-23
+
+### Added
+
+- **Utils/Request - Added server() and file() methods.
+
+
 ## [2.4.4] - 2026-04-22
 
 ### Updated

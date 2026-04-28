@@ -145,24 +145,24 @@
         },
         {
             "name": "savadub/savv",
-            "version": "v2.4.4",
-            "version_normalized": "2.4.4.0",
+            "version": "v2.5.3",
+            "version_normalized": "2.5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/igefadele/savv_framework.git",
-                "reference": "bf74e9958d8f30c4faafa00e6ab13f82bc144128"
+                "reference": "0d8787db9a6202e335b887e1afbfc6592e38c56f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/igefadele/savv_framework/zipball/bf74e9958d8f30c4faafa00e6ab13f82bc144128",
-                "reference": "bf74e9958d8f30c4faafa00e6ab13f82bc144128",
+                "url": "https://api.github.com/repos/igefadele/savv_framework/zipball/0d8787db9a6202e335b887e1afbfc6592e38c56f",
+                "reference": "0d8787db9a6202e335b887e1afbfc6592e38c56f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0",
                 "vlucas/phpdotenv": "^5.5"
             },
-            "time": "2026-04-22T14:01:07+00:00",
+            "time": "2026-04-24T09:48:09+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -193,15 +193,15 @@
                 "wordpress-fallback"
             ],
             "support": {
-                "source": "https://github.com/igefadele/savv_framework/tree/v2.4.4",
+                "source": "https://github.com/igefadele/savv_framework/tree/v2.5.3",
                 "issues": "https://github.com/igefadele/savv_framework/issues"
             },
             "install-path": "../savadub/savv"
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.36.0",
-            "version_normalized": "1.36.0.0",
+            "version": "v1.37.0",
+            "version_normalized": "1.37.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
@@ -262,7 +262,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -286,8 +286,8 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.36.0",
-            "version_normalized": "1.36.0.0",
+            "version": "v1.37.0",
+            "version_normalized": "1.37.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
@@ -350,7 +350,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -374,8 +374,8 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.36.0",
-            "version_normalized": "1.36.0.0",
+            "version": "v1.37.0",
+            "version_normalized": "1.37.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
@@ -437,7 +437,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.37.0"
             },
             "funding": [
                 {
