@@ -112,6 +112,11 @@
                             style="font-family:var(--mono);font-size:.8em;color:var(--cyan)">views/posts/</code> with
                         frontmatter and it's published at its slug URL automatically.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feat-icon">db:orm</div>
+                    <h3>Lightweight ORM</h3>
+                    <p>Fluent query builder, eager loading, dirty-state tracking, and four relationship types — all on a lean PDO core with zero magic and full type safety. No N+1 queries by default.</p>
+                </div>
             </div>
             <div class="size-callout">
                 <div class="size-card">
@@ -194,6 +199,12 @@
                             <td class="check">✓</td>
                             <td class="cross">✗</td>
                             <td class="warn">⚠</td>
+                        </tr>
+                        <tr>
+                            <td>Lightweight ORM built-in, no extra package</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
                         </tr>
                         <tr>
                             <td>Deep ORM / large plugin ecosystem</td>

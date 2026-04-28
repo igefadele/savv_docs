@@ -71,6 +71,19 @@
             <a class="nav-item" href="#config-reference">Config Reference</a>
         </div>
         <div class="nav-group">
+            <span class="nav-group-label">Database</span>
+            <a class="nav-item" href="#database">Overview</a>
+            <a class="nav-sub" href="#db-models">Defining Models</a>
+            <a class="nav-sub" href="#db-crud">CRUD Operations</a>
+            <a class="nav-sub" href="#db-query">Fluent Querying</a>
+            <a class="nav-sub" href="#db-pagination">Pagination</a>
+            <a class="nav-sub" href="#db-eager">Eager Loading</a>
+            <a class="nav-sub" href="#db-relationships">Relationships</a>
+            <a class="nav-sub" href="#db-raw">Raw Queries</a>
+            <a class="nav-sub" href="#db-cache">Identity Map</a>
+            <a class="nav-sub" href="#db-helpers">DB Helpers</a>
+        </div>
+        <div class="nav-group">
             <span class="nav-group-label">Deploy</span>
             <a class="nav-item" href="#deployment">Deployment</a>
             <a class="nav-item" href="#autoloading">Autoloading</a>
@@ -290,11 +303,14 @@ composer install</pre>
                             <div class="code-dot cd-g"></div>
                         </div><span>public/index.php</span>
                     </div>
-                    <pre><span class="c-fn">define</span>(<span class="c-str">'ROOT_PATH'</span>, <span class="c-fn">dirname</span>(__DIR__));
-<span class="c-key">require</span> ROOT_PATH . <span class="c-str">'/vendor/autoload.php'</span>;
+                    <pre>
+    <span class="c-fn">define</span>(<span class="c-str">'ROOT_PATH'</span>, <span class="c-fn">dirname</span>(__DIR__));
+    <span class="c-fn">define</span>(<span class="c-str">'PUBLIC_PATH'</span>, __DIR__);
+    <span class="c-key">require</span> ROOT_PATH . <span class="c-str">'/vendor/autoload.php'</span>;
 
-<span class="c-key">$app</span> = \Savv\Core\Application::<span class="c-fn">bootstrap</span>(__DIR__);
-<span class="c-key">$app</span>-><span class="c-fn">run</span>();</pre>
+    <span class="c-key">$app</span> = \Savv\Core\Application::<span class="c-fn">bootstrap</span>(ROOT_PATH, PUBLIC_PATH);
+    <span class="c-key">$app</span>-><span class="c-fn">run</span>();
+                    </pre>
                 </div>
                 <p><code>Application::run()</code> executes this sequence on every request:</p>
                 <ol class="doc-list">
@@ -1053,6 +1069,335 @@ document.<span class="c-fn">addEventListener</span>(<span class="c-str">'savv:in
     ],
 ];</pre>
                 </div>
+
+                <h3 class="doc-h3">configs/database.php</h3>
+                <p>Required when using the database layer. Add this file to your project and pass it to <code>SavvDb::getInstance()</code> during bootstrap.</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>configs/database.php</span>
+                    </div>
+                    <pre><span class="c-key">return</span> [
+    <span class="c-str">'driver'</span>    => <span class="c-str">'mysql'</span>,
+    <span class="c-str">'host'</span>      => <span class="c-str">'127.0.0.1'</span>,
+    <span class="c-str">'database'</span>  => <span class="c-str">'savv_db'</span>,
+    <span class="c-str">'username'</span>  => <span class="c-key">$_ENV</span>[<span class="c-str">'DB_USERNAME'</span>] ?? <span class="c-str">'root'</span>,
+    <span class="c-str">'password'</span>  => <span class="c-key">$_ENV</span>[<span class="c-str">'DB_PASSWORD'</span>] ?? <span class="c-str">''</span>,
+    <span class="c-str">'charset'</span>   => <span class="c-str">'utf8mb4'</span>,
+    <span class="c-str">'collation'</span> => <span class="c-str">'utf8mb4_unicode_ci'</span>,
+];</pre>
+                </div>
+                <p>Initialize once at bootstrap — typically in a service provider or at the top of <code>public/index.php</code>:</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">use</span> Savv\Utils\Db\SavvDb;
+
+SavvDb::<span class="c-fn">getInstance</span>(<span class="c-fn">config</span>(<span class="c-str">'database'</span>));</pre>
+                </div>
+            </div>
+
+            <!-- DATABASE -->
+            <div id="database" class="doc-section">
+                <h2 class="doc-h2">Database <a class="anchor" href="#database">#</a></h2>
+                <p>Savv Web includes a lightweight, high-performance database layer built on four tightly designed classes. It gives you a modern ORM experience — fluent querying, eager loading, dirty-state tracking, and relationships — while adding negligible overhead and keeping the entire implementation readable and traceable.</p>
+                <p>The database layer lives under <code>Savv\Utils\Db\</code> and is available via global helpers (<code>savvQuery()</code>, <code>savvDb()</code>) in addition to static model methods.</p>
+
+                <h3 class="doc-h3">Architecture</h3>
+                <table class="doc-table">
+                    <thead>
+                        <tr><th>Class</th><th>Responsibility</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>SavvDb</td><td>Singleton PDO connection manager. All queries go through prepared statements.</td></tr>
+                        <tr><td>SavvModel</td><td>Abstract base class for your models. Provides CRUD, dirty-state tracking, and relationship descriptors.</td></tr>
+                        <tr><td>SavvQuery</td><td>Fluent query builder. Handles filtering, ordering, pagination, joins, eager loading, and model hydration.</td></tr>
+                        <tr><td>SavvCache</td><td>In-memory identity map. Caches meta-data during the request lifecycle to prevent redundant queries.</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Blueprint Relationships.</strong> Relationship methods (<code>hasMany</code>, <code>belongsTo</code>, etc.) do not execute queries immediately. They return a descriptor array that the eager-loading engine uses to batch all related records into a single query per relationship. Database load drops from O(N) to O(1 + number of relations).</p>
+                <p><strong>Dirty State Tracking.</strong> <code>SavvModel</code> stores the original state at load time. On <code>save()</code>, only columns that actually changed are sent to the database. After a successful save, the original state is reset, preventing redundant identical writes.</p>
+                <p><strong>Explicit Hydration.</strong> <code>SavvQuery::setModel()</code> tells the builder exactly which class to instantiate per row. No convention guessing. Full type safety.</p>
+
+                <h3 class="doc-h3" id="db-models">Defining Models</h3>
+                <p>Extend <code>SavvModel</code> and declare the <code>$table</code> property:</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>app/Models/Post.php</span>
+                    </div>
+                    <pre><span class="c-key">namespace</span> App\Models;
+<span class="c-key">use</span> Savv\Utils\Db\SavvModel;
+
+<span class="c-key">class</span> <span class="c-fn">Post</span> <span class="c-key">extends</span> SavvModel {
+    <span class="c-key">protected static</span> <span class="c-key">$table</span> = <span class="c-str">'posts'</span>;
+
+    <span class="c-key">public function</span> <span class="c-fn">author</span>() {
+        <span class="c-key">return</span> <span class="c-key">$this</span>-><span class="c-fn">belongsTo</span>(User::<span class="c-key">class</span>, <span class="c-str">'user_id'</span>);
+    }
+
+    <span class="c-key">public function</span> <span class="c-fn">comments</span>() {
+        <span class="c-key">return</span> <span class="c-key">$this</span>-><span class="c-fn">hasMany</span>(Comment::<span class="c-key">class</span>, <span class="c-str">'post_id'</span>);
+    }
+}</pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-crud">CRUD Operations</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-comment">// Find by ID</span>
+<span class="c-key">$post</span> = Post::<span class="c-fn">find</span>(<span class="c-num">1</span>);
+<span class="c-key">echo</span> <span class="c-key">$post</span>->title;
+
+<span class="c-comment">// Create</span>
+<span class="c-key">$user</span> = <span class="c-key">new</span> <span class="c-fn">User</span>([<span class="c-str">'username'</span> => <span class="c-str">'ige_fadele'</span>, <span class="c-str">'email'</span> => <span class="c-str">'ige@savadub.com'</span>]);
+<span class="c-key">$user</span>-><span class="c-fn">save</span>(); <span class="c-comment">// $user->id is now populated</span>
+
+<span class="c-comment">// Update — only changed columns are sent to the DB</span>
+<span class="c-key">$user</span> = User::<span class="c-fn">find</span>(<span class="c-num">1</span>);
+<span class="c-key">$user</span>->status = <span class="c-str">'inactive'</span>;
+<span class="c-key">$user</span>-><span class="c-fn">save</span>();
+
+<span class="c-comment">// Delete</span>
+<span class="c-key">$user</span>-><span class="c-fn">delete</span>();</pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-query">Fluent Querying</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-comment">// Via model static method</span>
+<span class="c-key">$users</span> = User::<span class="c-fn">query</span>()
+    -><span class="c-fn">select</span>([<span class="c-str">'id'</span>, <span class="c-str">'username'</span>, <span class="c-str">'email'</span>])
+    -><span class="c-fn">where</span>(<span class="c-str">'status'</span>, <span class="c-str">'active'</span>)
+    -><span class="c-fn">orderBy</span>(<span class="c-str">'created_at'</span>, <span class="c-str">'DESC'</span>)
+    -><span class="c-fn">get</span>();
+
+<span class="c-comment">// Via global helper — works on any table</span>
+<span class="c-key">$posts</span> = <span class="c-fn">savvQuery</span>(<span class="c-str">'posts'</span>)
+    -><span class="c-fn">where</span>(<span class="c-str">'is_published'</span>, <span class="c-num">1</span>)
+    -><span class="c-fn">orderBy</span>(<span class="c-str">'created_at'</span>, <span class="c-str">'DESC'</span>)
+    -><span class="c-fn">get</span>();</pre>
+                </div>
+                <table class="doc-table">
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>select($columns)</td><td>Specify columns to fetch. Accepts a string or array.</td></tr>
+                        <tr><td>where($column, $value, $op)</td><td>Add a WHERE clause. Default operator is <code>=</code>.</td></tr>
+                        <tr><td>whereIn($column, $values)</td><td>Add a WHERE IN clause.</td></tr>
+                        <tr><td>orderBy($column, $direction)</td><td>Set ORDER BY. Default direction is <code>DESC</code>.</td></tr>
+                        <tr><td>join($table, $first, $second, $type)</td><td>Add a JOIN. Default type is <code>INNER</code>.</td></tr>
+                        <tr><td>get()</td><td>Execute and return all matched model instances.</td></tr>
+                        <tr><td>first()</td><td>Execute and return the first matched result only.</td></tr>
+                        <tr><td>count()</td><td>Return the count of matched rows as an integer.</td></tr>
+                        <tr><td>exists()</td><td>Return <code>true</code> if at least one matching row exists.</td></tr>
+                        <tr><td>paginate($perPage, $page)</td><td>Return a paginated result array.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="doc-h3" id="db-pagination">Pagination</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">$result</span> = User::<span class="c-fn">query</span>()
+    -><span class="c-fn">where</span>(<span class="c-str">'status'</span>, <span class="c-str">'active'</span>)
+    -><span class="c-fn">paginate</span>(<span class="c-num">15</span>, <span class="c-key">$_GET</span>[<span class="c-str">'page'</span>] ?? <span class="c-num">1</span>);
+
+<span class="c-comment">// Returns:
+// [
+//   'data'         => [...],  // model instances
+//   'total'        => 120,
+//   'per_page'     => 15,
+//   'current_page' => 1,
+//   'last_page'    => 8,
+// ]</span></pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-eager">Eager Loading</h3>
+                <p>Load relationships upfront to avoid the N+1 problem. Savv fetches all related records in <strong>one additional query per relationship</strong>, regardless of how many parent models are in the result.</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-comment">// 2 queries total: one for posts, one for their authors</span>
+<span class="c-key">$posts</span> = Post::<span class="c-fn">query</span>()
+    -><span class="c-fn">with</span>([<span class="c-str">'author'</span>])
+    -><span class="c-fn">get</span>();
+
+<span class="c-key">foreach</span> (<span class="c-key">$posts</span> <span class="c-key">as</span> <span class="c-key">$post</span>) {
+    <span class="c-key">echo</span> <span class="c-key">$post</span>->author->name; <span class="c-comment">// no extra query triggered</span>
+}
+
+<span class="c-comment">// Multiple relationships — still one extra query per relation</span>
+<span class="c-key">$posts</span> = Post::<span class="c-fn">query</span>()
+    -><span class="c-fn">with</span>([<span class="c-str">'author'</span>, <span class="c-str">'comments'</span>])
+    -><span class="c-fn">get</span>();</pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-relationships">Relationships</h3>
+
+                <p><strong>hasOne — One-to-One</strong></p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">public function</span> <span class="c-fn">profile</span>() {
+    <span class="c-key">return</span> <span class="c-key">$this</span>-><span class="c-fn">hasOne</span>(Profile::<span class="c-key">class</span>, <span class="c-str">'user_id'</span>);
+}
+<span class="c-key">$profile</span> = User::<span class="c-fn">find</span>(<span class="c-num">1</span>)->profile;</pre>
+                </div>
+
+                <p><strong>hasMany — One-to-Many</strong></p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">public function</span> <span class="c-fn">comments</span>() {
+    <span class="c-key">return</span> <span class="c-key">$this</span>-><span class="c-fn">hasMany</span>(Comment::<span class="c-key">class</span>, <span class="c-str">'post_id'</span>);
+}
+<span class="c-key">$comments</span> = Post::<span class="c-fn">find</span>(<span class="c-num">1</span>)->comments;</pre>
+                </div>
+
+                <p><strong>belongsTo — Inverse / Many-to-One</strong></p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">public function</span> <span class="c-fn">post</span>() {
+    <span class="c-key">return</span> <span class="c-key">$this</span>-><span class="c-fn">belongsTo</span>(Post::<span class="c-key">class</span>, <span class="c-str">'post_id'</span>);
+}
+<span class="c-key">$post</span> = Comment::<span class="c-fn">find</span>(<span class="c-num">1</span>)->post;</pre>
+                </div>
+
+                <p><strong>hasManyThrough — Deep Relationships</strong></p>
+                <p>For structures like Country → Users → Posts. Uses a standard <code>INNER JOIN</code> and returns a blueprint the eager-loading engine can batch.</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-comment">// In Country model</span>
+<span class="c-key">public function</span> <span class="c-fn">posts</span>() {
+    <span class="c-key">return</span> <span class="c-key">$this</span>-><span class="c-fn">hasManyThrough</span>(
+        Post::<span class="c-key">class</span>,   <span class="c-comment">// target</span>
+        User::<span class="c-key">class</span>,   <span class="c-comment">// intermediate</span>
+        <span class="c-str">'country_id'</span>,  <span class="c-comment">// FK on users table → Country</span>
+        <span class="c-str">'user_id'</span>      <span class="c-comment">// FK on posts table → User</span>
+    );
+}
+<span class="c-key">$posts</span> = Country::<span class="c-fn">find</span>(<span class="c-num">1</span>)->posts;</pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-raw">Raw Queries &amp; Transactions</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-comment">// Raw query with bound parameters</span>
+<span class="c-fn">savvDb</span>()-><span class="c-fn">query</span>(<span class="c-str">"UPDATE sessions SET expired = 1 WHERE last_seen < ?"</span>, [<span class="c-fn">time</span>() - <span class="c-num">3600</span>]);
+
+<span class="c-comment">// Transaction</span>
+<span class="c-key">$db</span> = <span class="c-fn">savvDb</span>();
+<span class="c-key">$db</span>-><span class="c-fn">query</span>(<span class="c-str">"START TRANSACTION"</span>);
+
+<span class="c-key">try</span> {
+    <span class="c-key">$db</span>-><span class="c-fn">query</span>(<span class="c-str">"INSERT INTO orders (user_id, total) VALUES (?, ?)"</span>, [<span class="c-key">$userId</span>, <span class="c-key">$total</span>]);
+    <span class="c-key">$db</span>-><span class="c-fn">query</span>(<span class="c-str">"UPDATE inventory SET stock = stock - 1 WHERE product_id = ?"</span>, [<span class="c-key">$productId</span>]);
+    <span class="c-key">$db</span>-><span class="c-fn">query</span>(<span class="c-str">"COMMIT"</span>);
+} <span class="c-key">catch</span> (\Exception <span class="c-key">$e</span>) {
+    <span class="c-key">$db</span>-><span class="c-fn">query</span>(<span class="c-str">"ROLLBACK"</span>);
+    <span class="c-fn">logger</span>()-><span class="c-fn">error</span>(<span class="c-str">'Transaction failed'</span>, [<span class="c-str">'reason'</span> => <span class="c-key">$e</span>-><span class="c-fn">getMessage</span>()]);
+}</pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-cache">Identity Map — Meta Data</h3>
+                <p><code>SavvCache</code> is used internally by <code>SavvQuery::getWithMeta()</code> to batch-fetch meta records from a <code>{table}_meta</code> table — useful for WordPress-style architectures where entities have a separate meta table.</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-comment">// Fetch records + meta in 2 queries total, not N+1</span>
+<span class="c-key">$items</span> = <span class="c-fn">savvQuery</span>(<span class="c-str">'users'</span>)-><span class="c-fn">getWithMeta</span>([<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]);
+
+<span class="c-comment">// Access meta via __get — hits cache, not DB</span>
+<span class="c-key">echo</span> <span class="c-key">$user</span>->display_name;
+
+<span class="c-comment">// Write or read the cache directly</span>
+<span class="c-key">use</span> Savv\Utils\Db\SavvCache;
+
+SavvCache::<span class="c-fn">setMeta</span>(<span class="c-key">$userId</span>, <span class="c-str">'avatar_url'</span>, <span class="c-str">'/uploads/avatar.jpg'</span>);
+<span class="c-key">$avatar</span> = SavvCache::<span class="c-fn">getMeta</span>(<span class="c-key">$userId</span>, <span class="c-str">'avatar_url'</span>);
+
+SavvCache::<span class="c-fn">flush</span>(); <span class="c-comment">// Free memory after long-running processes</span></pre>
+                </div>
+
+                <h3 class="doc-h3" id="db-helpers">Global Database Helpers</h3>
+                <table class="doc-table">
+                    <thead><tr><th>Helper</th><th>Returns</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>savvQuery($table)</td><td>SavvQuery</td><td>Start a fluent query on any table.</td></tr>
+                        <tr><td>savvDb()</td><td>SavvDb</td><td>Access the raw PDO wrapper for queries and transactions.</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="callout info">
+                    <span class="callout-icon">ℹ</span>
+                    <p>All queries — including every query generated by the builder and the model — use PDO prepared statements with bound parameters. SQL injection protection is on by default with no extra configuration needed.</p>
+                </div>
             </div>
 
             <!-- DEPLOYMENT -->
@@ -1150,6 +1495,16 @@ document.<span class="c-fn">addEventListener</span>(<span class="c-str">'savv:in
             <a class="toc-link" href="#redirections">Redirections</a>
             <a class="toc-link" href="#cms-fallback">CMS Fallback</a>
             <a class="toc-link" href="#cli">CLI</a>
+            <a class="toc-link" href="#config-reference">Config Reference</a>
+            <a class="toc-link" href="#database">Database</a>
+            <a class="toc-link sub" href="#db-models">Models</a>
+            <a class="toc-link sub" href="#db-crud">CRUD</a>
+            <a class="toc-link sub" href="#db-query">Querying</a>
+            <a class="toc-link sub" href="#db-pagination">Pagination</a>
+            <a class="toc-link sub" href="#db-eager">Eager Loading</a>
+            <a class="toc-link sub" href="#db-relationships">Relationships</a>
+            <a class="toc-link sub" href="#db-raw">Raw Queries</a>
+            <a class="toc-link sub" href="#db-cache">Identity Map</a>
             <a class="toc-link" href="#deployment">Deployment</a>
             <a class="toc-link" href="#philosophy">Philosophy</a>
         </aside>
