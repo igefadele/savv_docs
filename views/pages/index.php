@@ -1,6 +1,6 @@
 <?php
     $pageTitle = "Savv Web Framework— The Zero-Build PHP Framework";
-    $pageDescription = "Savv is a zero-config, zero-build PHP framework for brand websites, portfolios, and public-facing web experiences. Less than 1MB. Ships PWA out of the box";
+    $pageDescription = "Savv is a zero-config, zero-build PHP framework for brand websites, portfolios, and public-facing web experiences. Less than 1MB. Ships PWA, events, and a lightweight ORM out of the box";
     //$extraCSS = '<link rel="stylesheet" href="/assets/css/docs.css">';
 
     ob_start();
@@ -117,6 +117,11 @@
                     <h3>Lightweight ORM</h3>
                     <p>Fluent query builder, eager loading, dirty-state tracking, and four relationship types — all on a lean PDO core with zero magic and full type safety. No N+1 queries by default.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feat-icon">bus:event</div>
+                    <h3>Events, Observers, Bus</h3>
+                    <p>Use in-process events for app flow, model observers for side effects, and Redis-backed bus dispatch when multiple Savv apps need to talk without tight coupling.</p>
+                </div>
             </div>
             <div class="size-callout">
                 <div class="size-card">
@@ -222,7 +227,7 @@
     <section>
         <div class="container">
             <span class="section-eyebrow">// how it works</span>
-            <h2>Your entire entry point<br>is three lines.</h2>
+            <h2>Your entire entry point<br>stays tiny.</h2>
             <p class="section-lead">Every Savv application bootstraps from a single, readable entry file. Nothing is
                 hidden. Nothing is magic.</p>
             <div class="demo-inner">
@@ -277,10 +282,11 @@
                     <pre><span class="c-comment">// The entire application entry point.</span>
                     <span class="c-comment">// That's it. Really.</span>
 
+                    <span class="c-fn">define</span>(<span class="c-str">'PUBLIC_PATH'</span>, __DIR__);
                     <span class="c-fn">define</span>(<span class="c-str">'ROOT_PATH'</span>, <span class="c-fn">dirname</span>(__DIR__));
                     <span class="c-key">require</span> ROOT_PATH . <span class="c-str">'/vendor/autoload.php'</span>;
 
-                    <span class="c-key">$app</span> = \Savv\Core\Application::<span class="c-fn">bootstrap</span>(__DIR__);
+                    <span class="c-key">$app</span> = \Savv\Core\Application::<span class="c-fn">bootstrap</span>(ROOT_PATH, PUBLIC_PATH);
                     <span class="c-key">$app</span>-><span class="c-fn">run</span>();</pre>
                 </div>
             </div>
@@ -309,6 +315,44 @@
 <span class="c-comment">&lt;?php</span>
 <span class="c-key">$content</span> = <span class="c-fn">ob_get_clean</span>();
 <span class="c-key">include</span> ROOT_PATH . <span class="c-str">'/views/layouts/index.php'</span>;</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <span class="section-eyebrow">// app architecture</span>
+            <h2>Small core. Surprisingly capable.</h2>
+            <p class="section-lead">Savv stays focused on public-facing sites, but the core now covers more than routing and templates when your project needs a little application logic.</p>
+            <div class="use-cases-grid">
+                <div class="use-case">
+                    <div class="use-case-icon">⚙️</div>
+                    <div>
+                        <h4>In-Memory Events</h4>
+                        <p><code>SavvEvent</code> gives you a clean internal event layer for app flow without adding a separate event container.</p>
+                    </div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🪝</div>
+                    <div>
+                        <h4>Model Observers</h4>
+                        <p>Centralize lifecycle reactions like notifications, auditing, or cache work in dedicated observer classes.</p>
+                    </div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🧵</div>
+                    <div>
+                        <h4>Cross-Service Bus</h4>
+                        <p>Publish events to other Savv apps through Redis and let each service react locally through the same event interface.</p>
+                    </div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🗃️</div>
+                    <div>
+                        <h4>Readable Data Layer</h4>
+                        <p>The ORM, query builder, identity map, and relationship blueprints stay traceable enough to understand in one sitting.</p>
+                    </div>
                 </div>
             </div>
         </div>

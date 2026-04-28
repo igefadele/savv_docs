@@ -1,6 +1,6 @@
 <?php
     $pageTitle = "Documentation — Savv Web Framework";
-    $pageDescription = "Complete technical documentation for the Savv Web Framework. Routing, PWA, helpers, middleware, CLI, and more.";
+    $pageDescription = "Complete technical documentation for the Savv Web Framework. Routing, PWA, helpers, middleware, database, events, bus, CLI, and more.";
     $extraCSS = '<link rel="stylesheet" href="/assets/css/docs.css">';
 
     ob_start();
@@ -68,7 +68,7 @@
             <a class="nav-item" href="#redirections">URL Redirections</a>
             <a class="nav-item" href="#cms-fallback">CMS Fallback</a>
             <a class="nav-item" href="#cli">CLI Commands</a>
-            <a class="nav-item" href="#config-reference">Config Reference</a>
+            <a class="nav-item" href="#config-reference">Config Reference</a> 
         </div>
         <div class="nav-group">
             <span class="nav-group-label">Database</span>
@@ -82,6 +82,13 @@
             <a class="nav-sub" href="#db-raw">Raw Queries</a>
             <a class="nav-sub" href="#db-cache">Identity Map</a>
             <a class="nav-sub" href="#db-helpers">DB Helpers</a>
+        </div>
+        <div class="nav-group">
+            <span class="nav-group-label">Event, Observers & Microservices Bus</span>
+            <a class="nav-item" href="#savv-event">Overview</a>
+            <a class="nav-sub" href="#savv-event">Savv Event</a>
+            <a class="nav-sub" href="#savv-observer">Savv Observer</a>
+            <a class="nav-sub" href="#savv-bus">Savv Bus Service</a>
         </div>
         <div class="nav-group">
             <span class="nav-group-label">Deploy</span>
@@ -1013,6 +1020,10 @@ document.<span class="c-fn">addEventListener</span>(<span class="c-str">'savv:in
                             <td>make:controller &lt;name&gt;</td>
                             <td>Scaffolds a controller class in <code>app/Controllers/</code></td>
                         </tr>
+                        <tr>
+                            <td>bus:work</td>
+                            <td>Runs the long-lived worker that consumes shared bus events and re-fires them locally</td>
+                        </tr>
                     </tbody>
                 </table>
                 <div class="callout info"><span class="callout-icon">ℹ</span>
@@ -1071,7 +1082,7 @@ document.<span class="c-fn">addEventListener</span>(<span class="c-str">'savv:in
                 </div>
 
                 <h3 class="doc-h3">configs/database.php</h3>
-                <p>Required when using the database layer. Add this file to your project and pass it to <code>SavvDb::getInstance()</code> during bootstrap.</p>
+                <p>Required when using the database layer. Add this file to your project and pass it to <code>SavvDb::getInstance()</code> during bootstrap. Add a <code>redis</code> key when you want the bus provider to activate automatically.</p>
                 <div class="code-block">
                     <div class="code-block-header">
                         <div class="code-dots">
@@ -1088,6 +1099,12 @@ document.<span class="c-fn">addEventListener</span>(<span class="c-str">'savv:in
     <span class="c-str">'password'</span>  => <span class="c-key">$_ENV</span>[<span class="c-str">'DB_PASSWORD'</span>] ?? <span class="c-str">''</span>,
     <span class="c-str">'charset'</span>   => <span class="c-str">'utf8mb4'</span>,
     <span class="c-str">'collation'</span> => <span class="c-str">'utf8mb4_unicode_ci'</span>,
+
+    <span class="c-str">'redis'</span> => [
+        <span class="c-str">'host'</span>     => <span class="c-str">'127.0.0.1'</span>,
+        <span class="c-str">'port'</span>     => <span class="c-num">6379</span>,
+        <span class="c-str">'password'</span> => <span class="c-fn">null</span>,
+    ],
 ];</pre>
                 </div>
                 <p>Initialize once at bootstrap — typically in a service provider or at the top of <code>public/index.php</code>:</p>
@@ -1400,6 +1417,181 @@ SavvCache::<span class="c-fn">flush</span>(); <span class="c-comment">// Free me
                 </div>
             </div>
 
+            <!-- SAVV EVENT -->
+            <div id="savv-event" class="doc-section">
+                <h2 class="doc-h2">Savv Event <a class="anchor" href="#savv-event">#</a></h2>
+                <p><code>Savv\Utils\Event\SavvEvent</code> is the framework's lightweight in-memory event dispatcher. It lets you register listeners and fire events anywhere in the request lifecycle without adding a separate event container or queue dependency.</p>
+                <p>It also acts as the bridge between model lifecycle hooks and cross-service bus messages. Local listeners fire immediately, while remote bus packets are re-emitted into the same dispatcher with a <code>bus:</code> prefix.</p>
+
+                <h3 class="doc-h3">Basic Usage</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">use</span> Savv\Utils\Event\SavvEvent;
+
+SavvEvent::<span class="c-fn">listen</span>(<span class="c-str">'order.placed'</span>, <span class="c-key">function</span> (<span class="c-key">$payload</span>) {
+    <span class="c-comment">// React to the event</span>
+});
+
+SavvEvent::<span class="c-fn">fire</span>(<span class="c-str">'order.placed'</span>, [
+    <span class="c-str">'order_id'</span> => <span class="c-num">42</span>,
+    <span class="c-str">'total'</span> => <span class="c-num">199.99</span>,
+]);</pre>
+                </div>
+
+                <h3 class="doc-h3">Cross-Service Intake</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">use</span> Savv\Utils\Event\SavvEvent;
+
+SavvEvent::<span class="c-fn">listen</span>(<span class="c-str">'bus:user.created'</span>, <span class="c-key">function</span> (<span class="c-key">$payload</span>) {
+    <span class="c-comment">// Handle an event sent from another Savv app</span>
+});</pre>
+                </div>
+                <p>Use plain event names for internal application flow, and <code>bus:</code>-prefixed names for events arriving from other services.</p>
+            </div>
+
+            <!-- SAVV OBSERVER -->
+            <div id="savv-observer" class="doc-section">
+                <h2 class="doc-h2">Savv Observer <a class="anchor" href="#savv-observer">#</a></h2>
+                <p><code>Savv\Utils\Event\SavvObserver</code> gives you a clean place to register model event hooks. Each observer class defines an <code>observe()</code> method, and Savv boots those observers during application startup.</p>
+                <p>Observers work especially well for notifications, auditing, cache updates, or outbound bus dispatches that should happen when a model changes.</p>
+
+                <h3 class="doc-h3">Registering Observers</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>configs/observers.php</span>
+                    </div>
+                    <pre><span class="c-key">return</span> [
+    \App\Models\User::<span class="c-key">class</span> => \App\Observers\UserObserver::<span class="c-key">class</span>,
+];</pre>
+                </div>
+
+                <h3 class="doc-h3">Example Observer</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>app/Observers/UserObserver.php</span>
+                    </div>
+                    <pre><span class="c-key">namespace</span> App\Observers;
+
+<span class="c-key">use</span> App\Models\User;
+<span class="c-key">use</span> Savv\Utils\Event\SavvBus;
+<span class="c-key">use</span> Savv\Utils\Event\SavvEvent;
+<span class="c-key">use</span> Savv\Utils\Event\SavvObserver;
+
+<span class="c-key">class</span> <span class="c-fn">UserObserver</span> <span class="c-key">extends</span> SavvObserver
+{
+    <span class="c-key">public function</span> <span class="c-fn">observe</span>()
+    {
+        User::<span class="c-fn">created</span>(<span class="c-key">function</span> (<span class="c-key">$user</span>) {
+            SavvBus::<span class="c-fn">dispatch</span>(<span class="c-str">'user.created'</span>, [
+                <span class="c-str">'id'</span> => <span class="c-key">$user</span>->id,
+                <span class="c-str">'email'</span> => <span class="c-key">$user</span>->email,
+            ]);
+        });
+
+        SavvEvent::<span class="c-fn">listen</span>(<span class="c-str">'bus:user.created'</span>, <span class="c-key">function</span> (<span class="c-key">$payload</span>) {
+            <span class="c-comment">// Handle the same event when it comes from another service</span>
+        });
+    }
+}</pre>
+                </div>
+                <p>Because <code>SavvModel</code> already exposes helpers like <code>created()</code>, <code>updated()</code>, and <code>deleted()</code>, observers become the natural place to centralize domain reactions without scattering callbacks across controllers and models.</p>
+            </div>
+
+            <!-- SAVV BUS -->
+            <div id="savv-bus" class="doc-section">
+                <h2 class="doc-h2">Savv Bus Service <a class="anchor" href="#savv-bus">#</a></h2>
+                <p><code>Savv\Utils\Event\SavvBus</code> is Savv's transport layer for multi-service communication. It lets independent Savv applications publish events onto a shared bus so other services can receive and react asynchronously.</p>
+
+                <ol class="doc-list">
+                    <li>Your app dispatches an event with <code>SavvBus::dispatch()</code>.</li>
+                    <li>The packet is pushed onto the shared Redis list <code>savv_global_bus</code>.</li>
+                    <li>A long-running worker consumes the packet.</li>
+                    <li>The worker re-fires the event locally as <code>bus:{event}</code> through <code>SavvEvent</code>.</li>
+                </ol>
+
+                <h3 class="doc-h3">Redis Configuration</h3>
+                <p>The bus provider activates automatically when <code>database.redis</code> exists in <code>configs/database.php</code>. Without Redis config, the bus remains dormant and the rest of the framework still runs normally.</p>
+                <div class="callout tip"><span class="callout-icon">✦</span>
+                    <p>Savv prefers the native <code>Redis</code> PHP extension and falls back to <code>Predis\Client</code> when available.</p>
+                </div>
+
+                <h3 class="doc-h3">Dispatching to Other Services</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>php</span>
+                    </div>
+                    <pre><span class="c-key">use</span> Savv\Utils\Event\SavvBus;
+
+SavvBus::<span class="c-fn">dispatch</span>(<span class="c-str">'invoice.paid'</span>, [
+    <span class="c-str">'invoice_id'</span> => <span class="c-num">501</span>,
+    <span class="c-str">'customer_id'</span> => <span class="c-num">88</span>,
+    <span class="c-str">'amount'</span> => <span class="c-num">45000</span>,
+]);</pre>
+                </div>
+                <p>Each packet contains the event name, the application name from <code>config('app.name')</code>, the payload, and a timestamp.</p>
+
+                <h3 class="doc-h3">Running the Worker</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>terminal</span>
+                    </div>
+                    <pre><p>php public/savv bus:work </p>
+<span class="c-comment">// Make sure you use in place of public/ to the directory where savv is located </span>
+                    </pre>
+                </div>
+                <p>The worker blocks on the shared bus and re-fires each incoming packet locally as <code>bus:{event}</code>. One app can publish <code>user.created</code> while another listens for <code>bus:user.created</code> and reacts inside its own process.</p>
+
+                <h3 class="doc-h3">Supervisor Example</h3>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <div class="code-dots">
+                            <div class="code-dot cd-r"></div>
+                            <div class="code-dot cd-y"></div>
+                            <div class="code-dot cd-g"></div>
+                        </div><span>supervisor.conf</span>
+                    </div>
+                    <pre>[program:savv-bus-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/project/public/savv bus:work
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/path/to/project/logs/bus-worker.log</pre>
+                </div>
+                <p>If your environment does not provide Redis, skip the worker and continue using Savv in its normal single-application mode.</p>
+            </div>
+
             <!-- DEPLOYMENT -->
             <div id="deployment" class="doc-section">
                 <h2 class="doc-h2">Deployment <a class="anchor" href="#deployment">#</a></h2>
@@ -1505,6 +1697,9 @@ SavvCache::<span class="c-fn">flush</span>(); <span class="c-comment">// Free me
             <a class="toc-link sub" href="#db-relationships">Relationships</a>
             <a class="toc-link sub" href="#db-raw">Raw Queries</a>
             <a class="toc-link sub" href="#db-cache">Identity Map</a>
+            <a class="toc-link" href="#savv-event">Savv Event</a>
+            <a class="toc-link" href="#savv-observer">Savv Observer</a>
+            <a class="toc-link" href="#savv-bus">Savv Bus</a>
             <a class="toc-link" href="#deployment">Deployment</a>
             <a class="toc-link" href="#philosophy">Philosophy</a>
         </aside>
