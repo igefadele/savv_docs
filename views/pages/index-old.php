@@ -212,18 +212,6 @@
                             <td class="cross">✗</td>
                         </tr>
                         <tr>
-                            <td>In-process events &amp; model observers</td>
-                            <td class="check">✓</td>
-                            <td class="check">✓</td>
-                            <td class="cross">✗</td>
-                        </tr>
-                        <tr>
-                            <td>Redis-backed inter-service message bus</td>
-                            <td class="check">✓</td>
-                            <td class="warn">⚠</td>
-                            <td class="cross">✗</td>
-                        </tr>
-                        <tr>
                             <td>Deep ORM / large plugin ecosystem</td>
                             <td class="cross">✗</td>
                             <td class="check">✓</td>
@@ -279,13 +267,6 @@
                                 for your JS</h4>
                             <p>Custom event fires on first load and after every page swap. Your UI components always
                                 reinitialize correctly.</p>
-                        </div>
-                    </div>
-                    <div class="demo-point">
-                        <div class="demo-point-num">5</div>
-                        <div>
-                            <h4>React to model changes with Events &amp; Observers</h4>
-                            <p><code style="font-family:var(--mono);font-size:.8em;color:var(--cyan)">SavvEvent</code> fires in-process hooks. Model lifecycle methods like <code style="font-family:var(--mono);font-size:.8em;color:var(--cyan)">User::created()</code> let observers react to data changes. <code style="font-family:var(--mono);font-size:.8em;color:var(--cyan)">SavvBus</code> extends this across multiple apps via Redis — zero coupling required.</p>
                         </div>
                     </div>
                 </div>
@@ -490,13 +471,6 @@
                     <div>
                         <h4>Hybrid CMS Sites</h4>
                         <p>Savv front, WordPress blog behind.</p>
-                    </div>
-                </div>
-                <div class="use-case">
-                    <div class="use-case-icon">⚡</div>
-                    <div>
-                        <h4>Multi-Service Platforms</h4>
-                        <p>Independent Savv apps communicating via Redis bus — decoupled, fast, no shared codebase.</p>
                     </div>
                 </div>
             </div>
